@@ -17,9 +17,11 @@ func TestSaveAndLoad(t *testing.T) {
 	_, n := g.GetNode("three")
 	assert.Equal(t, "three description", n.Description)
 
-	g.Connect("one", "dep", "two")
-	g.Connect("three", "assoc", "two")
-	g.Connect("three", "assoc", "two")
+	g.Connect("one", "dep", "two", "")
+	g.Connect("three", "assoc", "two", "desc 1")
+	g.Connect("three", "assoc", "two", "desc 2")
+
+	g.Show()
 
 	g.Save()
 	assert.Equal(t, 2, g.LinkLength())
@@ -40,8 +42,8 @@ func TestDeleteLink(t *testing.T) {
 	g := Graph{}
 	g.Name = "bob"
 
-	g.Connect("one", "dep", "two")
-	g.Connect("one", "dep", "three")
+	g.Connect("one", "dep", "two", "desc 1")
+	g.Connect("one", "dep", "three", "desc 1")
 
 	assert.Equal(t, 2, g.LinkLength())
 	log.Printf("A: %s", g.ToJSON())
@@ -53,7 +55,7 @@ func TestDeleteLink(t *testing.T) {
 	log.Printf("B: %s", g.ToJSON())
 	assert.Equal(t, 1, g.LinkLength())
 
-	g.Connect("one", "dep", "three")
+	g.Connect("one", "dep", "three", "desc 1")
 	log.Printf("C: %s", g.ToJSON())
 	assert.Equal(t, 0, g.Size())
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -20,10 +21,11 @@ type Node struct {
 }
 
 type Link struct {
-	FromName string
-	ToName   string
-	Reltype  string
-	Tags     []string
+	FromName    string
+	ToName      string
+	Reltype     string
+	Description string
+	Tags        []string
 }
 
 func (g *Graph) GetLink(fromName string, reltype string, toName string) (int, *Link) {
@@ -43,12 +45,13 @@ func (g *Graph) Disconnect(fromName string, reltype string, toName string) {
 	}
 }
 
-func (g *Graph) Connect(fromName string, reltype string, toName string) *Link {
+func (g *Graph) Connect(fromName string, reltype string, toName string, description string) *Link {
 	_, l := g.GetLink(fromName, reltype, toName)
 	if l == nil {
 		l = &Link{FromName: fromName, ToName: toName, Reltype: reltype}
 		g.Links = append(g.Links, l)
 	}
+	l.Description = description
 	return l
 }
 
@@ -85,6 +88,14 @@ func (g *Graph) RenameNode(name string, newname string) {
 	if node != nil {
 		node.Name = newname
 	}
+	for _, l := range g.Links {
+		if l.FromName == name {
+			l.FromName = newname
+		}
+		if l.ToName == name {
+			l.ToName = newname
+		}
+	}
 }
 
 func (g *Graph) Size() int {
@@ -117,4 +128,35 @@ func Load(filename string) *Graph {
 	} else {
 		return FromJSON(dat)
 	}
+}
+
+func (g *Graph) Show() {
+	fmt.Printf("Graph %s. Nodes %d. Links %d\n", g.Name, g.Size(), g.LinkLength())
+	fmt.Print("------------------------\n")
+	for idx, n := range g.Nodes {
+		fmt.Printf("%d: %s [%s] == %s\n", idx, n.Name, n.Stereotype, n.Description)
+	}
+	fmt.Print("------------------------\n")
+	for idx, l := range g.Links {
+		fmt.Printf("%d: %s -(%s)-> %s == %s\n", idx, l.FromName, l.Reltype, l.ToName, l.Description)
+	}
+}
+
+func (g *Graph) Graphviz() {
+	fmt.Printf("digraph g { \n\tgraph [fontsize=30 labelloc=\"t\" label=\"\" splines=true overlap=false rankdir = \"LR\"];\n\n")
+
+	for _, n := range g.Nodes {
+		fmt.Printf("\t\"%s\" [ style=\"filled\"  penwidth = 1 fillcolor = \"white\" fontname = \"Courier New\" shape = \"Mrecord\" label = \"≪%s≫\\n%s\"];\n", n.Name, n.Stereotype, n.Name)
+	}
+
+	fmt.Print("\n")
+
+	for _, l := range g.Links {
+		if l.Description != "" {
+			fmt.Printf("\t\"%s\" -> \"%s\" [ penwidth = 1 fontsize = 10 fontcolor = \"black\" label = \"≪%s≫\\n%s\" ];\n", l.FromName, l.ToName, l.Reltype, l.Description)
+		} else {
+			fmt.Printf("\t\"%s\" -> \"%s\" [ penwidth = 1 fontsize = 10 fontcolor = \"black\" label = \"≪%s≫\" ];\n", l.FromName, l.ToName, l.Reltype)
+		}
+	}
+	fmt.Printf("}\n")
 }
