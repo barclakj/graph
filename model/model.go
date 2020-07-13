@@ -80,6 +80,13 @@ func (g *Graph) AddNode(name string, stereotype string, description string) *Nod
 	return n
 }
 
+func (g *Graph) RenameNode(name string, newname string) {
+	_, node := g.GetNode(name)
+	if node != nil {
+		node.Name = newname
+	}
+}
+
 func (g *Graph) Size() int {
 	return len(g.Nodes)
 }
@@ -105,15 +112,9 @@ func (g *Graph) Save() {
 
 func Load(filename string) *Graph {
 	dat, _ := ioutil.ReadFile(filename + ".graph")
-	g := FromJSON(dat)
-	return g
+	if len(dat) == 0 {
+		return nil
+	} else {
+		return FromJSON(dat)
+	}
 }
-
-// graph "graphname" "add" "stereotype" "name" "description"
-// graph "graphname" "ren" "name" "name"
-// graph "graphname" "link" "name" "reltype" "name"
-// graph "graphname" "del" "name"
-// graph "graphname" "unlink" "name" "reltype" "name"
-// graph "graphname" "tag" "name" "tags"
-// graph "graphname" "taglink" "name" "name" "tags"
-// graph "graphname" "comment" "name"

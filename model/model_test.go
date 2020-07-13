@@ -87,3 +87,20 @@ func TestDeleteNode(t *testing.T) {
 	log.Printf("D: %s", g.ToJSON())
 	assert.Equal(t, 0, g.Size())
 }
+
+func TestRenameNode(t *testing.T) {
+	g := Graph{}
+	g.Name = "bob"
+
+	g.AddNode("one", "type a", "some description")
+
+	_, n := g.GetNode("one")
+	assert.NotNil(t, n)
+	g.RenameNode("one", "two")
+
+	_, n = g.GetNode("two")
+	assert.NotNil(t, n)
+
+	_, n = g.GetNode("one")
+	assert.Nil(t, n)
+}
